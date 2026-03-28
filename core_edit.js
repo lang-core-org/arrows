@@ -238,6 +238,7 @@ class core_edit{
         let range_index = null;
         let index = -1;
         let last_index = -1;
+        let current_level = -1; //the level of brakets current process
         let id = 0;
         for(let {content,range} of core_edit.#walker(this.#node,this.#brakets_set)){
             id = this.#brakets_id.get(content);
@@ -249,6 +250,7 @@ class core_edit{
             
             if(index < 0){ //no found
                 last_index = last_index + 1;
+                current_level = current_level + 1;
                 expect[last_index] = ~id;
                 ranges[last_index] = range;
             }else{
@@ -257,7 +259,7 @@ class core_edit{
                 //highlights brakets
                 highlights.get(
                     this.#braket_paired_class[
-                        index % this.#braket_paired_class.length
+                        current_level % this.#braket_paired_class.length
                     ]
                 ).push(
                     range_index,
@@ -326,7 +328,8 @@ class core_edit{
                 );
 
                 //logic remove
-                last_index = index - 1; //here add -1
+                last_index = index;
+                current_level = current_level - 1;
                 
             }
         }
