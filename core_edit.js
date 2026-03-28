@@ -326,7 +326,7 @@ class core_edit{
                 );
 
                 //logic remove
-                last_index = index;
+                last_index = index - 1; //here add -1
                 
             }
         }
