@@ -235,10 +235,13 @@ class core_edit{
         
         let expect = []; //brakets expected
         let ranges = []; //associated ranges to brakets
+        let gindex = []; //associated the index of brakets in whole text;
+        let current_gindex = -1;
         let range_index = null;
         let index = -1;
         let last_index = -1;
-        let current_level = -1; //the level of brakets current process
+        let logic_brakets_dlevel = []; // logical highlights brakets
+        let logic_brakets_ranges = []; // logical highlights brakets
         let id = 0;
         for(let {content,range} of core_edit.#walker(this.#node,this.#brakets_set)){
             id = this.#brakets_id.get(content);
@@ -250,11 +253,19 @@ class core_edit{
             
             if(index < 0){ //no found
                 last_index = last_index + 1;
-                current_level = current_level + 1;
+                current_gindex = current_gindex + 1;
                 expect[last_index] = ~id;
                 ranges[last_index] = range;
+                gindex[last_index] = current_gindex;
             }else{
                 range_index = ranges[index];
+
+                //logical highlights paired brackets
+                logic_brakets_dlevel[ gindex[index] ] = -Math.sign(expect[index]); //line:ccdd
+                logic_brakets_ranges[ gindex[index] ] = range_index; //line:ccdd
+                current_gindex = current_gindex + 1;
+                logic_brakets_dlevel[ current_gindex ] = -Math.sign(~id);
+                logic_brakets_ranges[ current_gindex ] = range;
                 
                 //highlights text directly belongs brakets
                 highlight = highlights.get(
@@ -280,18 +291,6 @@ class core_edit{
                     
                     highlight.push(ranges[i]);
                 }
-
-                
-                //highlights brakets
-                highlights.get(
-                    this.#braket_paired_class[
-                        current_level % this.#braket_paired_class.length
-                    ]
-                ).push(
-                    range_index,
-                    range
-                );
-
                 
                 //highlight current pair brakets
                 if(
@@ -329,14 +328,50 @@ class core_edit{
                         endOffset: range.endOffset
                     }
                 );
+                gindex[index] = null; //magic number, due to line:ccdd
 
                 //logic remove
                 last_index = index;
-                current_level = current_level - 1;
                 
             }
         }
 
+        
+
+        //really highlights paired brakets
+        if(logic_brakets_ranges.length === logic_brakets_dlevel.length){
+            let level = -1;
+            for(let i = 0; i < logic_brakets_dlevel.length; i = i + 1){
+                switch(logic_brakets_dlevel[i]){
+                    case 1:
+                        level = level + 1;
+                        highlights.get(
+                            this.#braket_paired_class[
+                                level % this.#braket_paired_class.length
+                            ]
+                        ).push(
+                            logic_brakets_ranges[i]
+                        );
+                        break;
+                    case -1:
+                        highlights.get(
+                            this.#braket_paired_class[
+                                level % this.#braket_paired_class.length
+                            ]
+                        ).push(
+                            logic_brakets_ranges[i]
+                        );
+                        level = level - 1;
+                        break;
+                    default:
+                        //pass
+                }
+            }
+        }else{
+            throw new Error("unexpected error in highlights paired brakets");
+        }
+
+        
         //highlight unpaired brakets
         for(let i = 0; i <= last_index; i = i + 1){
             highlight_unpair.push( ranges[i] );
