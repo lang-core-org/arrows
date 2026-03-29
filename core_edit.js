@@ -244,6 +244,13 @@ class core_edit{
         let logic_brakets_ranges = []; // logical highlights brakets
         let id = 0;
         for(let {content,range} of core_edit.#walker(this.#node,this.#brakets_set)){
+            //record a brakets
+            current_gindex = current_gindex + 1;
+            logic_brakets_dlevel[ current_gindex ] = 0;
+            logic_brakets_ranges[ current_gindex ] = range;
+
+            
+            
             id = this.#brakets_id.get(content);
             if(id < 0){
                 index = expect.lastIndexOf(id,last_index);
@@ -253,7 +260,6 @@ class core_edit{
             
             if(index < 0){ //no found
                 last_index = last_index + 1;
-                current_gindex = current_gindex + 1;
                 expect[last_index] = ~id;
                 ranges[last_index] = range;
                 gindex[last_index] = current_gindex;
@@ -262,10 +268,8 @@ class core_edit{
 
                 //logical highlights paired brackets
                 logic_brakets_dlevel[ gindex[index] ] = -Math.sign(expect[index]); //line:ccdd
-                logic_brakets_ranges[ gindex[index] ] = range_index; //line:ccdd
-                current_gindex = current_gindex + 1;
                 logic_brakets_dlevel[ current_gindex ] = -Math.sign(~id);
-                logic_brakets_ranges[ current_gindex ] = range;
+                
                 
                 //highlights text directly belongs brakets
                 highlight = highlights.get(
@@ -338,7 +342,7 @@ class core_edit{
         
 
         //really highlights paired brakets
-        if(logic_brakets_ranges.length === logic_brakets_dlevel.length){
+        if(logic_brakets_ranges.length === logic_brakets_dlevel.length){ //maybe always true
             let level = -1;
             for(let i = 0; i < logic_brakets_dlevel.length; i = i + 1){
                 switch(logic_brakets_dlevel[i]){
