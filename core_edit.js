@@ -275,7 +275,6 @@ class core_edit{
                 for(let i = index; i <= last_index; i = i + 1){
                     if((~expect[i]) < 0 ){ //line:aabb
                         highlight_unpair.push(ranges[i]);
-                        current_level = current_level - 1;
                     }else{
                         //pass
                     }
