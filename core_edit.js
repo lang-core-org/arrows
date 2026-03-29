@@ -254,6 +254,8 @@ class core_edit{
                 expect[last_index] = ~id;
                 ranges[last_index] = range;
             }else{
+                range_index = ranges[index];
+                
                 //highlights text directly belongs brakets
                 highlight = highlights.get(
                     this.#brakets_class[~id]
@@ -280,7 +282,6 @@ class core_edit{
                 }
 
                 
-                range_index = ranges[index];
                 //highlights brakets
                 highlights.get(
                     this.#braket_paired_class[
