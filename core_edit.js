@@ -254,18 +254,6 @@ class core_edit{
                 expect[last_index] = ~id;
                 ranges[last_index] = range;
             }else{
-                range_index = ranges[index];
-                
-                //highlights brakets
-                highlights.get(
-                    this.#braket_paired_class[
-                        current_level % this.#braket_paired_class.length
-                    ]
-                ).push(
-                    range_index,
-                    range
-                );
-
                 //highlights text directly belongs brakets
                 highlight = highlights.get(
                     this.#brakets_class[~id]
@@ -274,6 +262,7 @@ class core_edit{
                 for(let i = index; i <= last_index; i = i + 1){
                     if((~expect[i]) < 0 ){ //line:aabb
                         highlight_unpair.push(ranges[i]);
+                        current_level = current_level - 1;
                     }else{
                         //pass
                     }
@@ -290,6 +279,19 @@ class core_edit{
                     highlight.push(ranges[i]);
                 }
 
+                
+                range_index = ranges[index];
+                //highlights brakets
+                highlights.get(
+                    this.#braket_paired_class[
+                        current_level % this.#braket_paired_class.length
+                    ]
+                ).push(
+                    range_index,
+                    range
+                );
+
+                
                 //highlight current pair brakets
                 if(
                     vertex.length === 0 &&
