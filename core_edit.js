@@ -481,7 +481,7 @@ class core_edit{
                     content_classes.map( (t) => [t,[]] )
                 );
                 this.#content_class_matcher = new Map();
-                for(kv of content_class){
+                for(let kv of content_class){
                     this.#content_class_matcher.set(
                         kv[0],
                         kv.slice(1).map( (reg) => new RegExp(`^(?:${reg.source})$`, "v") )
