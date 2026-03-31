@@ -9,7 +9,8 @@ class core_edit{
     #braket_current_paired_class;
     #classes; // all determined class
     #highlights_map; //supplier
-    #content_class;
+    #content_class_matcher; //map: c -> [regexp...]
+    #content_class_map; //supplier
     #current_pair = null;
     /**
      * @param node the editeable element
@@ -20,11 +21,13 @@ class core_edit{
      * @param braket_unpaired_class a class, e.g. "unpaired"
      * @param braket_paired_class a list of class, e.g. ["paired_0",...]
      * @param braket_current_paired_class a class, e.g. "current"
-     * @param content_class (content) => class , reveived a continuous content,return the custom class for content, e.g. "custom_key", or special val in examples
+     * @param content_class [[c,reg1,reg2,...]...], where
+     *                      c is a uniqued class different than classes before, for
+     *                      the text that matched one of RegExp /^(?:reg1)$/v , /^(?:reg2)$/v ,
+     *                      if matched c is more than one, content will be expand until only one or not matched,
+     *                      if content can't extend or no matched, it will keep default (C)
      * @examples class should be uniqued, which defined by CSS  ::highlight(class){...}
      * @examples grapheme, language indepent, defined by Unicode, aka segmenter with locales = "und"
-     * @examples content_class returns null if determined to use default highlight
-     * @examples content_class returns undefined if no determined
      * @link https://developer.mozilla.org/en-US/docs/Web/API/CSS_Custom_Highlight_API
      * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter
      */
@@ -53,8 +56,11 @@ class core_edit{
                 this.#classes.map( (t) => [t,[]] )
             );
             
-            this.#content_class = content_class;
-            this.#init();
+            if(this.#assert_content_class(content_class)){
+                this.#init();
+            }else{
+                throw new Error("illegal content_class");
+            }
         }else{
             throw new Error("illegal brakets");
         }
@@ -459,6 +465,38 @@ class core_edit{
         return vertex;
     }
 
+    #assert_content_class(content_class){
+        if(
+            (content_class instanceof Array) &&
+            brakets.every(
+                (kv) => (kv instanceof Array) && (kv.length >= 2) &&
+                        (typeof(kv[0]) === "string") &&
+                        (this.#classes.includes(kv[0]) === false)
+                        kv.slice(1).every( (p) => p instanceof RegExp)
+            )
+        ){
+            let content_classes = content_class.map( (t) => t[0] );
+            if((new Set(content_classes)).size === content_classes.length){
+                this.#content_class_map = () => new Map(
+                    content_classes.map( (t) => [t,[]] )
+                );
+                this.#content_class_matcher = new Map();
+                for(kv of content_class){
+                    this.#content_class_matcher.set(
+                        kv[0],
+                        kv.slice(1).map( (reg) => new RegExp(`^(?:${reg.source})$`, "v") )
+                    );
+                }
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            return false;
+        }
+        
+    }
+
     #assert_brakets(brakets){
         if(
             (brakets instanceof Array) && (brakets.length >= 1) && (brakets.length + 1 > 0) &&
@@ -552,24 +590,52 @@ class core_edit{
         let content_collector = "";
         let range_collection = [];
         let clazz = null;
+        
+        let highlights = this.#content_class_map();
+        core_edit.#clear_highlights_in(highlights.keys());
+
+        let fmatcher = (content) => {
+            let clazz = null; // use default highlight
+            for(let [c,rs] of this.#content_class_matcher){
+                if( rs.some( (r) => r.test(content) ) ){
+                    if(clazz === null){
+                        clazz = c;
+                    }else{
+                        clazz = undefined; //no determined
+                        break;
+                    }
+                }else{
+                    //pass
+                }
+            }
+            return clazz;
+        };
+        
         for(let segment of vertex){
+            content_collector = "";
+            range_collection = [];
+            
             for(let {content,range} of core_edit.#range_walker(this.#node,segment)){
                 content_collector = content_collector + content;
                 range_collection.push(range);
-                clazz = this.#content_class(content_collector);
+                clazz = fmatcher(content_collector);
                 switch(clazz){
-                    case undefined: //no determined
+                    case undefined: 
                         break;
                     default:
-                        core_edit.#highlights(clazz,range_collection);
+                        highlights.get(clazz).push(...range_collection);
                         //fall though
-                    case null: // use default highlight
+                    case null: 
                         content_collector = "";
                         range_collection = [];
                         break;
                 }
                 
             }
+        }
+
+        for(let [claz,rang] of highlights){
+            core_edit.#highlights(claz,rang);
         }
                 
     }
