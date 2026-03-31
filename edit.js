@@ -55,7 +55,7 @@ class edit extends core_edit{
                 (/^\p{L}+$/v.test(key))
             )
         ){
-            return keyword.flatMap( 
+            return keyword.map( 
                 (key) => new RegExp(`\\s${key}\\s`)
             );
         }else{
