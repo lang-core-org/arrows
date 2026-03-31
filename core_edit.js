@@ -471,7 +471,7 @@ class core_edit{
             brakets.every(
                 (kv) => (kv instanceof Array) && (kv.length >= 2) &&
                         (typeof(kv[0]) === "string") &&
-                        (this.#classes.includes(kv[0]) === false)
+                        (this.#classes.includes(kv[0]) === false) &&
                         kv.slice(1).every( (p) => p instanceof RegExp)
             )
         ){
