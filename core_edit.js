@@ -553,7 +553,7 @@ class core_edit{
         let range_collection = [];
         let clazz = null;
         for(let segment of vertex){
-            for(let {content,range} of range_walker(this.#node,segment)){
+            for(let {content,range} of core_edit.#range_walker(this.#node,segment)){
                 content_collector = content_collector + content;
                 range_collection.push(range);
                 clazz = this.#content_class(content_collector);
