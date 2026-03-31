@@ -55,7 +55,7 @@ class edit extends core_edit{
             )
         ){
             return keyword.flatMap( 
-                (key) => new RegExp(`\s${key}\s`)
+                (key) => new RegExp(`\\s${key}\\s`)
             );
         }else{
             throw new Error("illegal keyword");
