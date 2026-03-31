@@ -549,7 +549,29 @@ class core_edit{
 
     #render(){
         let vertex = this.#core_shader();
-        
+        let content_collector = "";
+        let range_conllection = [];
+        let clazz = null;
+        for(let segment of vertex){
+            for(let {content,range} of range_walker(this.#node,segment)){
+                content_collector = content_collector + content;
+                range_conllection.push(range);
+                clazz =this.#content_class(content_collector);
+                switch(clazz){
+                    case undefined: //no determined
+                        break;
+                    default:
+                        core_edit.#highlights(clazz,range_collection);
+                        //fall though
+                    case null: // use default highlight
+                        content_collector = "";
+                        range_collection = [];
+                        break;
+                }
+                
+            }
+        }
+                
     }
 
     #keydown(event) {
