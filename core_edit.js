@@ -250,7 +250,7 @@ class core_edit{
                     }
                     break;
                 case end_node:
-                    for(let grapheme of core_edit.#graphemes_all(content.slice(0,end_index)){
+                    for(let grapheme of core_edit.#graphemes_all(content.slice(0,end_index))){
                         yield {
                             content: grapheme.segment,
                             range: core_edit.#select(
