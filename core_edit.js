@@ -158,65 +158,74 @@ class core_edit{
     }
 
     static #empty_set = new Set();
+
+
+    static *#abstract_walker(node,start_node = node) {
+        let filter = (node) => {
+            if(
+                (node.nodeType === Node.TEXT_NODE) ||
+                (node.nodeName == `BR` && node.className == ``)
+            ){
+                return NodeFilter.FILTER_ACCEPT;
+            }else{
+                return NodeFilter.FILTER_REJECT;
+            }
+        };
+        if(filter(node) === NodeFilter.FILTER_ACCEPT){
+            yield node;
+        }else{
+            let walker = document.createTreeWalker(
+                node,
+                NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
+                filter
+            );
+            walker.currentNode = start_node;
+            if(filter(walker.currentNode) === NodeFilter.FILTER_ACCEPT){
+                yield walker.currentNode;
+            }else{
+                //pass
+            }
+            while(walker.nextNode()){
+                yield walker.currentNode;
+            }
+        }
+    }
+    
+    static #content(node){
+        return (node.nodeType === Node.TEXT_NODE) ? node.textContent : "\n";
+    }
+    static #select(node,text,index){
+        if(node.nodeType === Node.TEXT_NODE){
+            return new StaticRange(
+                {
+                    startContainer: node,
+                    startOffset: index,
+                    endContainer: node,
+                    endOffset: index + text.length
+                }
+            );
+        }else{
+            return core_edit.#selectNode(node);
+        }
+    }
+    
     static *#walker(node,grapheme_int_set = core_edit.#empty_set){
         node.normalize();
-
-        let abstract_walker = function* (node) {
-            let filter = (node) => {
-                if(
-                    (node.nodeType === Node.TEXT_NODE) ||
-                    (node.nodeName == `BR` && node.className == ``)
-                ){
-                    return NodeFilter.FILTER_ACCEPT;
-                }else{
-                    return NodeFilter.FILTER_REJECT;
-                }
-            };
-            
-            if(filter(node) === NodeFilter.FILTER_ACCEPT){
-                yield node;
-            }else{
-                let walker = document.createTreeWalker(
-                    node,
-                    NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
-                    filter
-                );
-                while(walker.nextNode()){
-                    yield walker.currentNode;
-                }
-            }
-        };
-        
-        let content = (node) => (node.nodeType === Node.TEXT_NODE) ? node.textContent : "\n";
-        let select = (node,text,index) => {
-            if(node.nodeType === Node.TEXT_NODE){
-                return new StaticRange(
-                    {
-                        startContainer: node,
-                        startOffset: index,
-                        endContainer: node,
-                        endOffset: index + text.length
-                    }
-                );
-            }else{
-                return core_edit.#selectNode(node);
-            }
-        };
         
         if(grapheme_int_set.size !== 0){
-            for(let current of abstract_walker(node)){
-                for(let grapheme of core_edit.#graphemes(content(current),grapheme_int_set)){
+            for(let current of core_edit.#abstract_walker(node)){
+                for(let grapheme of core_edit.#graphemes(core_edit.#content(current),grapheme_int_set)){
                     yield {
                         content: grapheme.segment,
-                        range: select(current,grapheme.segment,grapheme.index)
+                        range: core_edit.#select(current,grapheme.segment,grapheme.index)
                     };
                 }
             }
         }else{
-            for(let current of abstract_walker(node)){
+            for(let current of core_edit.#abstract_walker(node)){
                 yield {
-                    content: content(current),
-                    range: select(current,content,0)
+                    content: core_edit.#content(current),
+                    range: core_edit.#select(current,content,0)
                 };
             }
         }
