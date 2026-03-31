@@ -468,7 +468,7 @@ class core_edit{
     #assert_content_class(content_class){
         if(
             (content_class instanceof Array) &&
-            brakets.every(
+            content_class.every(
                 (kv) => (kv instanceof Array) && (kv.length >= 2) &&
                         (typeof(kv[0]) === "string") &&
                         (this.#classes.includes(kv[0]) === false) &&
