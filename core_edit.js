@@ -158,8 +158,7 @@ class core_edit{
     }
 
     static #empty_set = new Set();
-
-
+    
     static *#abstract_walker(node,start_node = node) {
         let filter = (node) => {
             if(
@@ -222,11 +221,62 @@ class core_edit{
                 }
             }
         }else{
+            let content = "";
             for(let current of core_edit.#abstract_walker(node)){
+                content = core_edit.#content(current);
                 yield {
-                    content: core_edit.#content(current),
+                    content: content,
                     range: core_edit.#select(current,content,0)
                 };
+            }
+        }
+    }
+
+    static *#range_walker(node,range){
+        let start_node = range.startContainer;
+        let start_index = range.startOffset;
+        let end_node = range.endContainer;
+        let end_index = range.endOffset;
+        let content = "";
+        for(let current of core_edit.#abstract_walker(node, start_node)){
+            content = core_edit.#content(current);
+            switch(current){
+                case start_node:
+                    for(let grapheme of core_edit.#graphemes_all(content.slice(start_index))){
+                        yield {
+                            content: grapheme.segment,
+                            range: core_edit.#select(
+                                       current,
+                                       grapheme.segment,
+                                       grapheme.index + start_index
+                            )
+                        };
+                    }
+                    break;
+                case end_node:
+                    for(let grapheme of core_edit.#graphemes_all(content.slice(0,end_index)){
+                        yield {
+                            content: grapheme.segment,
+                            range: core_edit.#select(
+                                       current,
+                                       grapheme.segment,
+                                       grapheme.index
+                            )
+                        };
+                    }
+                    return;
+                default:
+                    for(let grapheme of core_edit.#graphemes_all(content)){
+                        yield {
+                            content: grapheme.segment,
+                            range: core_edit.#select(
+                                       current,
+                                       grapheme.segment,
+                                       grapheme.index
+                            )
+                        };
+                    }
+                    break;
             }
         }
     }
