@@ -118,20 +118,6 @@ class core_edit{
             ) <= 0
         );
     }
-
-    static #selectNode(node){
-        let range = new Range();
-        range.selectNode( node );
-        return range;
-        /*return new StaticRange(
-            {
-                startContainer: range.startContainer,
-                startOffset: range.startOffset,
-                endContainer: range.endContainer,
-                endOffset: range.endOffset
-            }
-        );*/
-    }
     
     static #und_segmenter = new Intl.Segmenter('und');
     static *#graphemes(str,grapheme_int_set){
@@ -204,7 +190,17 @@ class core_edit{
                 }
             );
         }else{
-            return core_edit.#selectNode(node);
+            let range = new Range();
+            range.selectNode( node );
+            return range;
+            /*return new StaticRange(
+                  {
+                      startContainer: range.startContainer,
+                      startOffset: range.startOffset,
+                      endContainer: range.endContainer,
+                      endOffset: range.endOffset
+                  }
+              );*/
         }
     }
     
