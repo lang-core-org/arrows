@@ -2,9 +2,12 @@ class edit extends core_edit{
 
     /**
      * @param {*} editor the contentediable element
-     * @param {*} keywords keyword should be surround by space
+     * @param {*} keywords [key...] where key should be ^\p{L}+$/v,
+     *            key in code should surrounded by space character
      */
-    constructor(editor,keywords = ["->","=>","lambda"]){
+    constructor(editor,keywords = 
+                ["if","for","while","else","let","do","def","lambda"]
+               ){
         super(
             editor,
             [
@@ -15,21 +18,16 @@ class edit extends core_edit{
             "quote_unpair",
             ["quote_0","quote_1","quote_2"],
             "quote_current_pair",
-            (content) => {
-                console.log(content);
-                if(content === edit.arrow() || content === edit.varrow()){
-                    return "arrow";
-                }else if(
-                    /^\s\S+\s$/.test(content) && 
-                    keywords.find(keyword => keyword === content.trim()) !== undefined
-                ){
-                    return "keyword";
-                }else if(/^\s\S*$/.test(content)){
-                    return undefined;
-                }else{
-                    return null;
-                }
-            }
+            [
+                [
+                    "arrow",
+                    new RegExp(edit.arrow()),
+                    new RegExp(edit.varrow())
+                ],
+                [
+                    "keyword",
+                    ...edit.proc_keywords(keywords)
+                ];
         );
         
         editor.addEventListener(
@@ -46,6 +44,22 @@ class edit extends core_edit{
     
     static varrow(){
         return `←`;
+    }
+
+    static proc_keyword(keyword){
+        if(
+            (keyword instanceof Array) &&
+            keyword.every( (key) => 
+                (typeof(key) === "string") &&
+                (/^\p{L}+$/v.test(key))
+            )
+        ){
+            return keyword.flatMap( 
+                (key) => new RegExp(`\s${key}\s`)
+            );
+        }else{
+            throw new Error("illegal keyword");
+        }
     }
 
     keydown(event){
