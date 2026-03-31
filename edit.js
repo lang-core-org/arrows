@@ -27,7 +27,8 @@ class edit extends core_edit{
                 [
                     "keyword",
                     ...edit.proc_keywords(keywords)
-                ];
+                ]
+            ]
         );
         
         editor.addEventListener(
