@@ -712,6 +712,7 @@ class core_edit{
 
     #dragover(event){
         event.preventDefault();
+        event.dataTransfer.dropEffect = `copy`;
     }
 
     #drop(event){
