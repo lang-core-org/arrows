@@ -710,6 +710,17 @@ class core_edit{
         this.#render();
     }
 
+    #dragover(event){
+        event.preventDefault();
+    }
+
+    #drop(event){
+        event.preventDefault();
+        this.insert_with_paired(
+            event.dataTransfer.getData("text/plain")
+        );
+    }
+
     #selectionchange(event){
         this.#render();
     }
@@ -717,7 +728,7 @@ class core_edit{
     #resize(event){
         this.#render();
     }
-
+    
     #init(){
         this.#node.addEventListener("keydown",(event) => this.#keydown(event));
         this.#node.addEventListener("beforeinput",(event) => this.#beforeinput(event));
@@ -725,6 +736,8 @@ class core_edit{
         this.#node.addEventListener('compositionstart',(event) => this.#compositionstart(event));
         this.#node.addEventListener("paste",(event) => this.#paste(event));
         this.#node.addEventListener("focus",(event) => this.#focus(event));
+        this.#node.addEventListener("dragover",(event) => this.#dragover(event));
+        this.#node.addEventListener("drop",(event) => this.#drop(event));
         document.addEventListener("selectionchange",(event) => this.#selectionchange(event)); // selectionchange is base on document specialy
         window.visualViewport.addEventListener("resize",(event) => this.#resize(event)); // resize is base on window.visualViewport
     }
@@ -857,6 +870,3 @@ class core_edit{
         }
     }
 }
-
-
-
