@@ -233,12 +233,12 @@ class core_edit{
         }
     }
     
-    static *#walker(node,grapheme_id_map){
+    static *#walker_id(node,grapheme_id_map){
         node.normalize();
         for(let current of core_edit.#abstract_walker(node)){
             for(let grapheme of core_edit.#graphemes(current,grapheme_id_map)){
                 yield {
-                    id:grapheme.id,
+                    id: grapheme.id,
                     range: core_edit.#select(current,grapheme.segment,grapheme.index)
                 };
             }
@@ -343,15 +343,12 @@ class core_edit{
         let logic_brakets_dlevel = []; // logical highlights brakets
         let logic_brakets_ranges = []; // logical highlights brakets
         let id = 0;
-        for(let {id,content,range} of core_edit.#walker(this.#node,this.#brakets_id)){
+        for(let {id,range} of core_edit.#walker_id(this.#node,this.#brakets_id)){
             //record a brakets
             current_gindex = current_gindex + 1;
             logic_brakets_dlevel[ current_gindex ] = 0;
             logic_brakets_ranges[ current_gindex ] = range;
-
             
-            
-            //id = this.#brakets_id.get(content);
             if(id < 0){
                 index = expect.lastIndexOf(id,last_index);
             }else{
