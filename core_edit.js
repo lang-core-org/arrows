@@ -126,20 +126,37 @@ class core_edit{
     }
     
     static #und_segmenter = new Intl.Segmenter('und');
-    static *#graphemes(str,grapheme_int_set){
-        for(let braket of grapheme_int_set){
-            if(str.includes(braket)){
-                for(let grapheme of core_edit.#und_segmenter.segment(str) ){
-                    if(grapheme_int_set.has(grapheme.segment)){
-                        yield grapheme;
-                    }else{
-                        //pass
+    static #weak_ref = new WeakMap();// node => [Range...]; see more in *#graphemes
+    static *#graphemes(current,grapheme_int_set){
+        let content = core_edit.#content(current);
+        if(core_edit.#weak_ref.has(current) === true
+        && core_edit.#weak_ref.get(current).content === content //compare content to prevent modified
+        && core_edit.#weak_ref.get(current).grapheme_int_set === grapheme_int_set){
+            yield* core_edit.#weak_ref.get(current).ranges;
+            return;
+        }else{
+            let ranges = [];
+            for(let braket of grapheme_int_set){
+                if(content.includes(braket)){
+                    for(let grapheme of core_edit.#und_segmenter.segment(content) ){
+                        if(grapheme_int_set.has(grapheme.segment)){
+                            ranges.push(grapheme);
+                        }else{
+                            //pass
+                        }
                     }
+                    break;
+                }else{
+                    //pass
                 }
-                return;
-            }else{
-                //pass
             }
+            core_edit.#weak_ref.get(current) = {
+                content: content,
+                grapheme_int_set: grapheme_int_set,
+                ranges: ranges
+            };
+            yield* ranges;
+            return;
         }
     }
 
@@ -215,7 +232,7 @@ class core_edit{
         
         if(grapheme_int_set.size !== 0){
             for(let current of core_edit.#abstract_walker(node)){
-                for(let grapheme of core_edit.#graphemes(core_edit.#content(current),grapheme_int_set)){
+                for(let grapheme of core_edit.#graphemes(current,grapheme_int_set)){
                     yield {
                         content: grapheme.segment,
                         range: core_edit.#select(current,grapheme.segment,grapheme.index)
