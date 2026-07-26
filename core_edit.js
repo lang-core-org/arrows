@@ -1,6 +1,5 @@
 class core_edit{
     #node;
-    #brakets_set; //all L,R
     #brakets_map; // L -> R
     #brakets_id; //map: L -> x, R -> ~x  ,where x > 0
     #brakets_class; //array: [x] = C, where L -> x
@@ -127,20 +126,26 @@ class core_edit{
     
     static #und_segmenter = new Intl.Segmenter('und');
     static #weak_ref = new WeakMap();// node => [Range...]; see more in *#graphemes
-    static *#graphemes(current,grapheme_int_set){
+    static *#graphemes(current,grapheme_id_map){
         let content = core_edit.#content(current);
         if(core_edit.#weak_ref.has(current) === true
         && core_edit.#weak_ref.get(current).content === content //compare content to prevent modified
-        && core_edit.#weak_ref.get(current).grapheme_int_set === grapheme_int_set){
+        && core_edit.#weak_ref.get(current).grapheme_id_map === grapheme_id_map){
             yield* core_edit.#weak_ref.get(current).ranges;
             return;
         }else{
             let ranges = [];
-            for(let braket of grapheme_int_set){
+            for(let braket of grapheme_id_map.keys()){
                 if(content.includes(braket)){
                     for(let grapheme of core_edit.#und_segmenter.segment(content) ){
-                        if(grapheme_int_set.has(grapheme.segment)){
-                            ranges.push(grapheme);
+                        if(grapheme_id_map.has(grapheme.segment)){
+                            ranges.push(
+                                {
+                                    id: grapheme_id_map.get(grapheme.segment),
+                                    segment: grapheme.segment,
+                                    index: grapheme.index
+                                }
+                            );
                         }else{
                             //pass
                         }
@@ -154,7 +159,7 @@ class core_edit{
                 current,
                 {
                     content: content,
-                    grapheme_int_set: grapheme_int_set,
+                    grapheme_id_map: grapheme_id_map,
                     ranges: ranges
                 }
             );
@@ -228,12 +233,12 @@ class core_edit{
         }
     }
     
-    static *#walker(node,grapheme_int_set){
+    static *#walker(node,grapheme_id_map){
         node.normalize();
         for(let current of core_edit.#abstract_walker(node)){
-            for(let grapheme of core_edit.#graphemes(current,grapheme_int_set)){
+            for(let grapheme of core_edit.#graphemes(current,grapheme_id_map)){
                 yield {
-                    content: grapheme.segment,
+                    id:grapheme.id,
                     range: core_edit.#select(current,grapheme.segment,grapheme.index)
                 };
             }
@@ -338,7 +343,7 @@ class core_edit{
         let logic_brakets_dlevel = []; // logical highlights brakets
         let logic_brakets_ranges = []; // logical highlights brakets
         let id = 0;
-        for(let {content,range} of core_edit.#walker(this.#node,this.#brakets_set)){
+        for(let {id,content,range} of core_edit.#walker(this.#node,this.#brakets_id)){
             //record a brakets
             current_gindex = current_gindex + 1;
             logic_brakets_dlevel[ current_gindex ] = 0;
@@ -346,7 +351,7 @@ class core_edit{
 
             
             
-            id = this.#brakets_id.get(content);
+            //id = this.#brakets_id.get(content);
             if(id < 0){
                 index = expect.lastIndexOf(id,last_index);
             }else{
@@ -524,16 +529,6 @@ class core_edit{
                                        paired.every((t) => typeof(t) === "string")
             )
         ){
-            this.#brakets_set = new Set(
-                brakets.flatMap(
-                    ([L,_,R]) => [
-                        L.normalize("NFC"),
-                        R.normalize("NFC"),
-                        L.normalize("NFD"),
-                        R.normalize("NFD")
-                    ]
-                )
-            );
             this.#brakets_map = new Map(
                 [
                     ...brakets.map( 
