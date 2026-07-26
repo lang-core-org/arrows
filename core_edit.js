@@ -581,19 +581,12 @@ class core_edit{
         );
     }
 
-    #insert(str,highlight_now = true,collapse_to_start = false){
+    #insert(str,collapse_to_start = false){
         let sel = core_edit.get_sel();
         let indent = this.#indent();
         sel.deleteContents();
         sel.insertNode(core_edit.doc(str,indent));
         sel.collapse(collapse_to_start);
-
-        if(highlight_now === true){
-            this.#render();
-        }else{
-            //PASS
-        }
-
     }
 
     #render(){
@@ -718,11 +711,11 @@ class core_edit{
     }
 
     #selectionchange(event){
-        this.#render();
+        this.#render(); //fired due to anything cause selection change, including js code
     }
 
     #resize(event){
-        this.#render(); //padding
+        this.#render(); //unknown use
     }
     
     #init(){
@@ -856,9 +849,9 @@ class core_edit{
             let left = str;
             let sel = core_edit.get_sel();
             let content= core_edit.src( sel.cloneContents() );
-            this.#insert(left,false);
-            this.#insert(content,false);
-            this.#insert(right,true,true);
+            this.#insert(left);
+            this.#insert(content);
+            this.#insert(right,true);
         }
     }
 }
