@@ -168,8 +168,6 @@ class core_edit{
             yield grapheme;
         }
     }
-
-    static #empty_set = new Set();
     
     static *#abstract_walker(node,start_node = node) {
         let filter = (node) => {
@@ -230,27 +228,28 @@ class core_edit{
         }
     }
     
-    static *#walker(node,grapheme_int_set = core_edit.#empty_set){
+    static *#walker(node,grapheme_int_set){
         node.normalize();
-        
-        if(grapheme_int_set.size !== 0){
-            for(let current of core_edit.#abstract_walker(node)){
-                for(let grapheme of core_edit.#graphemes(current,grapheme_int_set)){
-                    yield {
-                        content: grapheme.segment,
-                        range: core_edit.#select(current,grapheme.segment,grapheme.index)
-                    };
-                }
-            }
-        }else{
-            let content = "";
-            for(let current of core_edit.#abstract_walker(node)){
-                content = core_edit.#content(current);
+        for(let current of core_edit.#abstract_walker(node)){
+            for(let grapheme of core_edit.#graphemes(current,grapheme_int_set)){
                 yield {
-                    content: content,
-                    range: core_edit.#select(current,content,0)
+                    content: grapheme.segment,
+                    range: core_edit.#select(current,grapheme.segment,grapheme.index)
                 };
             }
+        }
+    }
+
+
+    static *#walker_all(node){
+        node.normalize();
+        let content = "";
+        for(let current of core_edit.#abstract_walker(node)){
+            content = core_edit.#content(current);
+            yield {
+                content: content,
+                range: core_edit.#select(current,content,0)
+            };
         }
     }
 
@@ -781,7 +780,7 @@ class core_edit{
     }
 
     static src(node){
-        return [...core_edit.#walker(node)].map(({content}) => content).join("");
+        return [...core_edit.#walker_all(node)].map(({content}) => content).join("");
     }
 
     static get_sel(){
