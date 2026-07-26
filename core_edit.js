@@ -678,18 +678,6 @@ class core_edit{
         }
     }
 
-    #input(event) {
-        if(/deleteContentBackward/.test(event.inputType)){//press backspace
-            this.#render();
-        }else if(/deleteContentForward/.test(event.inputType)){// press del
-            this.#render();
-        }else if(/deleteByCut/.test(event.inputType)){// after cut
-            this.#render();
-        }else{
-            //PASS
-        }
-    }
-
     #compositionstart(event) {
         let sel= core_edit.get_sel();
         sel.deleteContents();
@@ -717,10 +705,6 @@ class core_edit{
         );
     }
 
-    #focus(event){
-        this.#render();
-    }
-
     #dragover(event){
         event.preventDefault();
         event.dataTransfer.dropEffect = `copy`;
@@ -738,16 +722,14 @@ class core_edit{
     }
 
     #resize(event){
-        this.#render();
+        this.#render(); //padding
     }
     
     #init(){
         this.#node.addEventListener("keydown",(event) => this.#keydown(event));
         this.#node.addEventListener("beforeinput",(event) => this.#beforeinput(event));
-        this.#node.addEventListener("input",(event) => this.#input(event));
         this.#node.addEventListener('compositionstart',(event) => this.#compositionstart(event));
         this.#node.addEventListener("paste",(event) => this.#paste(event));
-        this.#node.addEventListener("focus",(event) => this.#focus(event));
         this.#node.addEventListener("dragover",(event) => this.#dragover(event));
         this.#node.addEventListener("drop",(event) => this.#drop(event));
         document.addEventListener("selectionchange",(event) => this.#selectionchange(event)); // selectionchange is base on document specialy
@@ -862,8 +844,6 @@ class core_edit{
 
             sel.setStart(left.startContainer,left.startOffset);
             sel.setEnd(right.endContainer,right.endOffset);
-
-           // this.#render();
         }
     }
 
