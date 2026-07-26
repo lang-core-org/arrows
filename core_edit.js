@@ -863,7 +863,7 @@ class core_edit{
             sel.setStart(left.startContainer,left.startOffset);
             sel.setEnd(right.endContainer,right.endOffset);
 
-            this.#render();
+           // this.#render();
         }
     }
 
