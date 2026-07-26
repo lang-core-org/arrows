@@ -150,11 +150,14 @@ class core_edit{
                     //pass
                 }
             }
-            core_edit.#weak_ref.get(current) = {
-                content: content,
-                grapheme_int_set: grapheme_int_set,
-                ranges: ranges
-            };
+            core_edit.#weak_ref.set(
+                current,
+                {
+                    content: content,
+                    grapheme_int_set: grapheme_int_set,
+                    ranges: ranges
+                }
+            );
             yield* ranges;
             return;
         }
