@@ -72,7 +72,10 @@ class core_edit{
     }
 
     static #highlights(class_name,range_list){
-        let highlight = new Highlight(...range_list);
+        let highlight = new Highlight();
+        for(let range of range_list){
+            highlight.add(range_list);
+        }
         CSS.highlights.set(class_name,highlight);
     }
 
