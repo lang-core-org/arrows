@@ -322,6 +322,9 @@ class core_edit{
         }
     }
 
+
+    
+    #top_brakets_ranges = []; //remember the top paired braket
     #core_shader(){
         let vertex = []; //ranges directy belongs current brakets
         
@@ -330,7 +333,7 @@ class core_edit{
         let highlight_unpair = highlights.get(
             this.#braket_unpaired_class
         );
-        core_edit.#clear_highlights_in(this.#classes);
+        
         this.#current_pair = null; //clear current pair
         
         let expect = []; //brakets expected
@@ -364,8 +367,8 @@ class core_edit{
                 range_index = ranges[index];
 
                 //logical highlights paired brackets
-                logic_brakets_dlevel[ gindex[index] ] = -Math.sign(expect[index]); //line:ccdd
-                logic_brakets_dlevel[ current_gindex ] = -Math.sign(~id);
+                logic_brakets_dlevel[ gindex[index] ] =  Math.sign(~id); //line:ccdd
+                logic_brakets_dlevel[ current_gindex ] = Math.sign(id); //id represents right braket
                 
                 
                 //highlights text directly belongs brakets
@@ -413,7 +416,7 @@ class core_edit{
                 }
 
                 //logic pending
-                expect[index] = ~0; //magic number,due to line:aabb
+                expect[index] = ~0; //magic number
                 ranges[index] = new StaticRange(
                     {
                         startContainer: range_index.startContainer,
@@ -423,9 +426,16 @@ class core_edit{
                     }
                 );
                 gindex[index] = null; //magic number, due to line:ccdd
-
+                
                 //logic remove
                 last_index = index;
+
+                //todo
+                if(last_index === 0){
+                    //write into #top_brakets_ranges
+                }else{
+                    /*PASS*/
+                }
                 
             }
         }
@@ -469,7 +479,8 @@ class core_edit{
         }else{
             throw new Error("unexpected error in highlights paired brakets");
         }
-        
+
+        core_edit.#clear_highlights_in(this.#classes);
         for(let [clazz,lst] of highlights){
             core_edit.#highlights(clazz,lst);
         }
