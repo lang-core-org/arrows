@@ -374,7 +374,7 @@ class core_edit{
                 );
                 ranges[last_index + 1] = range;
                 for(let i = index; i <= last_index; i = i + 1){
-                    if((~expect[i]) < 0 ){ //line:aabb
+                    if((~expect[i]) != 0 ){ //line:aabb
                         highlight_unpair.push(ranges[i]);
                     }else{
                         //pass
@@ -469,12 +469,6 @@ class core_edit{
             }
         }else{
             throw new Error("unexpected error in highlights paired brakets");
-        }
-
-        
-        //highlight unpaired brakets
-        for(let i = 0; i <= last_index; i = i + 1){
-            highlight_unpair.push( ranges[i] );
         }
         
         for(let [clazz,lst] of highlights){
