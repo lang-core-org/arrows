@@ -581,12 +581,19 @@ class core_edit{
         );
     }
 
-    #insert(str,collapse_to_start = false){
+    #insert(str,highlight_now = true,collapse_to_start = false){
         let sel = core_edit.get_sel();
         let indent = this.#indent();
         sel.deleteContents();
         sel.insertNode(core_edit.doc(str,indent));
         sel.collapse(collapse_to_start);
+
+        if(highlight_now === true){
+            this.#render();
+        }else{
+            //PASS
+        }
+
     }
 
     #render(){
@@ -671,6 +678,18 @@ class core_edit{
         }
     }
 
+    #input(event) {
+        if(/deleteContentBackward/.test(event.inputType)){//press backspace
+            this.#render();
+        }else if(/deleteContentForward/.test(event.inputType)){// press del
+            this.#render();
+        }else if(/deleteByCut/.test(event.inputType)){// after cut
+            this.#render();
+        }else{
+            //PASS
+        }
+    }
+
     #compositionstart(event) {
         let sel= core_edit.get_sel();
         sel.deleteContents();
@@ -698,6 +717,10 @@ class core_edit{
         );
     }
 
+    #focus(event){
+        this.#render();
+    }
+
     #dragover(event){
         event.preventDefault();
         event.dataTransfer.dropEffect = `copy`;
@@ -711,18 +734,20 @@ class core_edit{
     }
 
     #selectionchange(event){
-        this.#render(); //fired due to anything cause selection change, including js code
+        this.#render();
     }
 
     #resize(event){
-        this.#render(); //unknown use
+        this.#render();
     }
     
     #init(){
         this.#node.addEventListener("keydown",(event) => this.#keydown(event));
         this.#node.addEventListener("beforeinput",(event) => this.#beforeinput(event));
+        this.#node.addEventListener("input",(event) => this.#input(event));
         this.#node.addEventListener('compositionstart',(event) => this.#compositionstart(event));
         this.#node.addEventListener("paste",(event) => this.#paste(event));
+        this.#node.addEventListener("focus",(event) => this.#focus(event));
         this.#node.addEventListener("dragover",(event) => this.#dragover(event));
         this.#node.addEventListener("drop",(event) => this.#drop(event));
         document.addEventListener("selectionchange",(event) => this.#selectionchange(event)); // selectionchange is base on document specialy
@@ -837,6 +862,8 @@ class core_edit{
 
             sel.setStart(left.startContainer,left.startOffset);
             sel.setEnd(right.endContainer,right.endOffset);
+
+            this.#render();
         }
     }
 
@@ -849,9 +876,9 @@ class core_edit{
             let left = str;
             let sel = core_edit.get_sel();
             let content= core_edit.src( sel.cloneContents() );
-            this.#insert(left);
-            this.#insert(content);
-            this.#insert(right,true);
+            this.#insert(left,false);
+            this.#insert(content,false);
+            this.#insert(right,true,true);
         }
     }
 }
