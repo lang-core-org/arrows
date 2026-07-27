@@ -374,12 +374,6 @@ class core_edit{
                 );
                 ranges[last_index + 1] = range;
                 for(let i = index; i <= last_index; i = i + 1){
-                    if((~expect[i]) != 0 ){ //line:aabb
-                        highlight_unpair.push(ranges[i]);
-                    }else{
-                        //pass
-                    }
-                    
                     ranges[i] = new StaticRange(
                         {
                             startContainer: ranges[i].endContainer,
@@ -462,6 +456,11 @@ class core_edit{
                             logic_brakets_ranges[i]
                         );
                         level = level - 1;
+                        break;
+                    case 0:
+                        highlight_unpair.push(
+                            logic_brakets_ranges[i]
+                        );
                         break;
                     default:
                         //pass
