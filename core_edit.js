@@ -322,10 +322,7 @@ class core_edit{
         }
     }
 
-
-    
-    #top_brakets_ranges = []; //remember the top paired braket
-    #core_shader(){
+    #core_shader(edit = true){ //edit: whether or not content has been edit
         let vertex = []; //ranges directy belongs current brakets
         
         let highlights = this.#highlights_map();
@@ -429,13 +426,6 @@ class core_edit{
                 
                 //logic remove
                 last_index = index;
-
-                //todo
-                if(last_index === 0){
-                    //write into #top_brakets_ranges
-                }else{
-                    /*PASS*/
-                }
                 
             }
         }
@@ -480,9 +470,19 @@ class core_edit{
             throw new Error("unexpected error in highlights paired brakets");
         }
 
-        core_edit.#clear_highlights_in(this.#classes);
-        for(let [clazz,lst] of highlights){
-            core_edit.#highlights(clazz,lst);
+        if(edit === true){
+            core_edit.#clear_highlights_in(this.#classes);
+            for(let [clazz,lst] of highlights){
+                core_edit.#highlights(clazz,lst);
+            }
+        }else{
+            core_edit.#clear_highlights_in(
+                this.#braket_current_paired_class
+            );
+            core_edit.#highlights(
+                core_edit.#clear_highlights_in,
+                this.#current_pair
+            );
         }
         
         this.visible_sel();
@@ -600,8 +600,8 @@ class core_edit{
 
     }
 
-    #render(){
-        let vertex = this.#core_shader();
+    #render(edit = true){ //see more at #core_shader
+        let vertex = this.#core_shader(edit);
         let content_collector = "";
         let range_collection = [];
         let clazz = null;
@@ -738,7 +738,7 @@ class core_edit{
     }
 
     #selectionchange(event){
-        this.#render();
+        this.#render(false);
     }
 
     #resize(event){
