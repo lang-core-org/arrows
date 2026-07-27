@@ -477,10 +477,10 @@ class core_edit{
             }
         }else{
             core_edit.#clear_highlights_in(
-                this.#braket_current_paired_class
+                [this.#braket_current_paired_class]
             );
             core_edit.#highlights(
-                core_edit.#clear_highlights_in,
+                this.#braket_current_paired_class,
                 this.#current_pair
             );
         }
