@@ -10,7 +10,7 @@ class core_edit{
     #highlights_map; //supplier
     #content_class_matcher; //map: c -> [regexp...]
     #content_class_map; //supplier
-    #current_pair = null;
+    #current_pair = [];
     /**
      * @param node the editeable element
      * @param brakets a list like [[L,C,R],...] which L, R is paired brakets, in single grapheme, uniqued, at least one paired,
@@ -334,7 +334,7 @@ class core_edit{
             this.#braket_unpaired_class
         );
         
-        this.#current_pair = null; //clear current pair
+        this.#current_pair = []; //clear current pair
         
         let expect = []; //brakets expected
         let ranges = []; //associated ranges to brakets
@@ -862,7 +862,7 @@ class core_edit{
     }
 
     expand_sel(sel = core_edit.get_sel()){
-        if(this.#current_pair === null){
+        if(this.#current_pair.length === 0){
             //PASS
         }else{
             let [left,right] = this.#current_pair;
